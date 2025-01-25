@@ -1,0 +1,4 @@
+*.abo
+*.ply
+*.pyc
+__pycache__
