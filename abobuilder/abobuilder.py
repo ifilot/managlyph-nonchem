@@ -24,7 +24,7 @@ class AboBuilder:
             '4s', '4px', '4py', '4pz'
         ]
 
-    def build_abo_model(self, outfile, models):
+    def build_abo_model(self, outfile, models, colors):
         """
         Build managlyph atom/bonds/orbitals file from
         previous HF calculation
@@ -65,7 +65,7 @@ class AboBuilder:
             f.write(int(i).to_bytes(2, byteorder='little'))
             
             # write model color
-            color = np.array(self.colors[i])
+            color = np.array(colors[i])
             f.write(color.tobytes())
             
             # write number of vertices

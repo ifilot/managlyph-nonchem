@@ -1,15 +1,23 @@
 import numpy as np
 from stl import mesh
 from abobuilder import AboBuilder
+import os, glob
+import tqdm
 
 def main():
     
-    names = ['ventricle.stl', 'arteries.stl', 'atrium.stl']
+    stl_files = [
+        ['sources/arteries.stl',    np.array([143, 24, 16, 255], dtype=np.float32) / 255],
+        ['sources/atrium.stl',      np.array([197, 184, 168, 255], dtype=np.float32) / 255],
+        ['sources/papillary.stl',   np.array([232, 217, 174, 255], dtype=np.float32) / 255],
+        ['sources/valve.stl',       np.array([252, 207, 212, 255], dtype=np.float32) / 255],
+        ['sources/veins.stl',       np.array([26, 133, 199, 255], dtype=np.float32) / 255],
+        ['sources/ventricle.stl',   np.array([238, 179, 163, 255], dtype=np.float32) / 255],
+    ]
 
     models = []    
-    for name in names:
-        file_path = "sources/%s" % name  # Replace with the path to your STL file
-        stl_data = read_stl(file_path)
+    for stl in tqdm.tqdm(stl_files):
+        stl_data = read_stl(stl[0])
     
         positions = np.array(stl_data['positions'], dtype=np.float32)
         normals = np.array(stl_data['vertex_normals'], dtype=np.float32)
@@ -30,12 +38,21 @@ def main():
     ctr = val / vertices
     for model in models:
         model['vertices'] -= ctr
+        
+    # Compute the rotation matrix for rotation around the y-axis
+    theta = np.radians(-60)
+    rotation_matrix = np.array([
+        [np.cos(theta), 0, np.sin(theta)],
+        [0, 1, 0],
+        [-np.sin(theta), 0, np.cos(theta)],
+    ], dtype=np.float32)
+    
+    for model in models:
+        model['vertices'] = model['vertices'] @ rotation_matrix
+        model['normals'] = model['normals'] @ rotation_matrix
 
     builder = AboBuilder()
-    builder.build_abo_model('test.abo', models)
-    
-    write_ply('test.ply', stl_data)
-
+    builder.build_abo_model('test.abo', models, [v[1] for v in stl_files])
 
 def read_stl(file_path):
     """
